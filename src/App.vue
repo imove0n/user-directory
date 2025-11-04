@@ -20,14 +20,18 @@ interface User {
 const users = ref<User[]>([])
 const searchQuery = ref<string>('')
 const sortAsc = ref<boolean>(true)
+const isLoading = ref<boolean>(true)
 
 // Fetch users from API
 const fetchUsers = async () => {
   try {
+    isLoading.value = true
     const response = await fetch('https://jsonplaceholder.typicode.com/users')
     users.value = await response.json()
   } catch (error) {
     console.error('Error fetching users:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -89,48 +93,84 @@ onMounted(() => {
       </button>
     </div>
 
-    <div class="user-grid">
-      <div v-for="user in filteredAndSortedUsers" :key="user.id" class="user-card">
+    <!-- Skeleton Loading -->
+    <div v-if="isLoading" class="user-grid">
+      <div v-for="n in 6" :key="'skeleton-' + n" class="user-card skeleton-card">
         <div class="card-header">
-          <h2 class="user-name">{{ user.name }}</h2>
-          <span class="username">@{{ user.username }}</span>
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-subtitle"></div>
         </div>
 
         <div class="card-body">
           <div class="info-row">
-            <span class="icon">📧</span>
-            <span class="info-text">{{ user.email }}</span>
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-text"></div>
           </div>
-
           <div class="info-row">
-            <span class="icon">📞</span>
-            <span class="info-text">{{ user.phone }}</span>
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-text"></div>
           </div>
-
           <div class="info-row">
-            <span class="icon">🏢</span>
-            <span class="info-text">{{ user.company.name }}</span>
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-text"></div>
           </div>
-
           <div class="info-row">
-            <span class="icon">📍</span>
-            <span class="info-text">
-              {{ user.address.street }}, {{ user.address.city }}
-            </span>
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-text"></div>
           </div>
-
           <div class="info-row">
-            <span class="icon">🌐</span>
-            <a :href="'http://' + user.website" target="_blank" class="website-link">
-              {{ user.website }}
-            </a>
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-text"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-if="filteredAndSortedUsers.length === 0" class="no-results">
-      <p>No users found matching "{{ searchQuery }}"</p>
+    <!-- Actual User Cards -->
+    <div v-else>
+      <div class="user-grid">
+        <div v-for="user in filteredAndSortedUsers" :key="user.id" class="user-card">
+          <div class="card-header">
+            <h2 class="user-name">{{ user.name }}</h2>
+            <span class="username">@{{ user.username }}</span>
+          </div>
+
+          <div class="card-body">
+            <div class="info-row">
+              <span class="icon">📧</span>
+              <span class="info-text">{{ user.email }}</span>
+            </div>
+
+            <div class="info-row">
+              <span class="icon">📞</span>
+              <span class="info-text">{{ user.phone }}</span>
+            </div>
+
+            <div class="info-row">
+              <span class="icon">🏢</span>
+              <span class="info-text">{{ user.company.name }}</span>
+            </div>
+
+            <div class="info-row">
+              <span class="icon">📍</span>
+              <span class="info-text">
+                {{ user.address.street }}, {{ user.address.city }}
+              </span>
+            </div>
+
+            <div class="info-row">
+              <span class="icon">🌐</span>
+              <a :href="'http://' + user.website" target="_blank" class="website-link">
+                {{ user.website }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="filteredAndSortedUsers.length === 0" class="no-results">
+        <p>No users found matching "{{ searchQuery }}"</p>
+      </div>
     </div>
   </div>
 </template>
@@ -314,6 +354,66 @@ onMounted(() => {
   opacity: 0.4;
   font-size: 1.125rem;
   font-weight: 500;
+}
+
+/* Skeleton Loading Styles */
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton {
+  background: #e0e0e0;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 1.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-subtitle {
+  width: 40%;
+  height: 1rem;
+}
+
+.skeleton-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.skeleton-text {
+  flex: 1;
+  height: 1rem;
 }
 
 @media (max-width: 768px) {
