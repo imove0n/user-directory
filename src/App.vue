@@ -1,9 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
-const users = ref([])
-const searchQuery = ref('')
-const sortAsc = ref(true)
+interface User {
+  id: number
+  name: string
+  username: string
+  email: string
+  phone: string
+  website: string
+  company: {
+    name: string
+  }
+  address: {
+    street: string
+    city: string
+  }
+}
+
+const users = ref<User[]>([])
+const searchQuery = ref<string>('')
+const sortAsc = ref<boolean>(true)
 
 // Fetch users from API
 const fetchUsers = async () => {
